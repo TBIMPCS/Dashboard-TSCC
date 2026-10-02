@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Download, Plus } from 'lucide-react';
 import { useData } from '../hooks/useData';
 import { useAuth } from '../hooks/useAuth';
@@ -9,7 +9,7 @@ import CaseFilters from '../components/CaseFilters';
 import CaseTable from '../components/CaseTable';
 import { Card, PageHead } from '../components/UI';
 export default function Cases({mode='all'}:{mode?:'all'|'drafts'|'mine'|'requests'}){
-  const {cases,config}=useData();const {profile}=useAuth();const [filters,setFilters]=useState({...emptyFilters});const navigate=useNavigate();
+  const {cases,config}=useData();const {profile}=useAuth();const [params]=useSearchParams();const [filters,setFilters]=useState({...emptyFilters,search:params.get('search')||'',pic:params.get('pic')||'',product:params.get('product')||'',category:params.get('category')||'',status:params.get('status')||'',urgency:params.get('urgency')||''});const navigate=useNavigate();
   const source=useMemo(()=>cases.filter(c=>mode==='drafts'?c.is_draft:mode==='mine'?c.primary_pic_id===profile!.id || c.collaborator_ids.includes(profile!.id):mode==='requests'?c.requester_id===profile!.id:!c.is_draft),[cases,mode,profile]);
   const filtered=useMemo(()=>filterCases(source,filters,config),[source,filters,config]);
   const title=mode==='drafts'?'Draft Cases':mode==='mine'?'My Cases':mode==='requests'?'My Requests':'Case Monitoring';
