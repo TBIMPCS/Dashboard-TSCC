@@ -4,7 +4,8 @@ export default defineConfig({
   use: { baseURL: 'http://127.0.0.1:5173', browserName: 'chromium', screenshot: 'only-on-failure', trace: 'retain-on-failure' },
   reporter: [['list'],['html',{open:'never'}]],
   webServer: {
-    command: 'npm run dev -- --port 5173', url: 'http://127.0.0.1:5173', reuseExistingServer: !process.env.CI,
-    env: {VITE_SUPABASE_URL:'https://eosjflarlcwygtcsvaio.supabase.co',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_e2e_fixture'},
+    command: 'npm run dev -- --port 5173', url: 'http://127.0.0.1:5173', reuseExistingServer: false,
+    env: {VITE_SUPABASE_URL:'https://tscc-e2e.supabase.invalid',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_e2e_fixture'},
   },
 });
+

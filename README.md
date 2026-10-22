@@ -70,7 +70,11 @@ To import into a different project, set a server-only `SUPABASE_SECRET_KEY` (or 
 npm run import:legacy -- /absolute/path/tcams_production_v21_department_head_drilldown.html
 ```
 
-The importer is idempotent and preserves existing case edits. Naive timestamps in the source are interpreted in Asia/Jakarta. Imported PIC names are normalized, while unknown names are retained. After inviting staff, use **Configuration → Link Imported PIC Assignments** to connect primary PIC identities to accounts. Collaborators and requester account links can be assigned on the case detail page. No source passwords or simulated accounts are migrated.
+The importer is idempotent and preserves existing case edits. Naive timestamps in the source are interpreted in Asia/Jakarta. Imported PIC names are normalized, while unknown names are retained. After inviting staff, use **Configuration → Link Imported PIC Assignments** to connect primary PIC identities to accounts. The Admin-only linking panel shows total, linked, and unlinked imported cases plus a per-PIC recap. Imported cases are identified by a non-null `source_batch`; linked means `primary_pic_id` is non-null. PICs with remaining unlinked cases appear first; fully linked PICs cannot be selected. Missing PIC names remain in the recap for manual review. Matching uses the exact stored PIC name, not fuzzy matching.
+
+Linking updates only `primary_pic_id` on matching imported cases whose account ID is still null. It preserves the legacy PIC name, existing assignments, non-imported cases, and protected source snapshots. The result reports the server's exact affected-row count (including zero when a selection becomes stale), then refreshes the recap. It does not grant access by name; existing account-based access policies remain unchanged. Counts reflect the loaded workspace, not an independently audited production total.
+
+Collaborators and requester account links can be assigned on the case detail page. No source passwords or simulated accounts are migrated.
 
 ## Vercel deployment
 
@@ -99,3 +103,10 @@ English and Bahasa Indonesia navigation preferences are persisted per user. The 
 ## Verification
 
 CI runs analytic/access unit tests, TypeScript checks, the production build, and Playwright tests for login failure, draft-to-submitted-to-closed workflow, comments, manager drilldowns, requester UI isolation, mobile navigation, and calendar persistence. Browser tests use synthetic API fixtures, not production records. Database authorization is verified separately using transactional Supabase RLS checks.
+
+
+### Synthetic imported PIC verification
+
+`npm test` covers recap grouping, missing names, exact update filters and counts above the response-row limit, invalid staff targets, non-Admin guards, and server errors. `npm run test:e2e` covers unlinked, partially linked, fully linked, and missing PIC scenarios, stale selections, refreshed counts, source-field preservation, and all non-Admin routes.
+
+Browser tests use an in-memory API fixture at `https://tscc-e2e.supabase.invalid` with a synthetic key. The shared browser fixture blocks all requests outside the local app unless explicitly mocked. Playwright starts its own server rather than reusing an existing one. No imports, migrations, or production database calls are needed. The mocked browser tests verify application behavior; they do not replace live RLS/database verification.
